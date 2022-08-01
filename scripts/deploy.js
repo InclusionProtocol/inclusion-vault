@@ -5,20 +5,40 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const { ethers } = require("hardhat");
+const dotenv = require('dotenv');
+
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  dotenv.config();
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+  const deci = 1_000_000;
+  const admin = process.env.ADMIN_ADDRESS;
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const USDT = await ethers.getContractFactory("USDT");
+  const usdt = await USDT.deploy(1_000_000 * deci);
+  await usdt.deployed();
+  console.log("USDT deployed to:", usdt.address);
 
-  await lock.deployed();
+  const SDGI = await ethers.getContractFactory("SDGI");
+  const sdgi = await SDGI.deploy(1_000_000 * deci);
+  await sdgi.deployed();
+  console.log("SDGI deployed to:", sdgi.address);
 
-  console.log("Lock with 1 ETH deployed to:", lock.address);
+  const SDG2USD = await ethers.getContractFactory("SDG2USD");
+  const sdg2usd = await SDG2USD.deploy();
+  await sdg2usd.deployed();
+  console.log("SDG2USD ratio oracle deployed to:", sdg2usd.address);
+
+  const Exchange = await ethers.getContractFactory("Exchange");
+  const exchange = await Exchange.deploy(usdt.address, sdgi.address, admin, sdg2usd.address);
+  await exchange.deployed();
+  console.log("Exchange deployed to:", exchange.address);
+
+  const Vault = await ethers.getContractFactory("Vault");
+  const vault = await Vault.deploy("SDGI", sdgi.address, admin);
+  await vault.deployed();
+  console.log("Vault deployed to:", vault.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
