@@ -88,27 +88,25 @@ contract Vault is Ownable, ReentrancyGuard, Pausable {
     }
 
     function deposit(uint256 amount) external nonReentrant whenNotPaused {
-        if (amount > 0) {
-            require(amount <= depositLimit, "Exceeds deposit limit");
-            require(IERC20(asset).balanceOf(_msgSender()) >= amount, "No enough token");
-            require(IERC20(asset).approve(address(this), amount));
-            emit Deposit(_msgSender(), amount);
-            IERC20(asset).safeTransferFrom(_msgSender(), address(this), amount);
-            _addrInfo[_msgSender()].recentDeposit = amount;
-            _addrInfo[_msgSender()].totalDeposit += amount;
-        }
+        require(amount > 0, "No 0");
+        require(amount <= depositLimit, "Exceeds deposit limit");
+        // require(IERC20(asset).balanceOf(_msgSender()) >= amount, "No enough token");
+        // require(IERC20(asset).approve(address(this), amount));
+        emit Deposit(_msgSender(), amount);
+        IERC20(asset).safeTransferFrom(_msgSender(), address(this), amount);
+        _addrInfo[_msgSender()].recentDeposit = amount;
+        _addrInfo[_msgSender()].totalDeposit += amount;
     }
 
     function withdraw(uint256 amount) external nonReentrant whenNotPaused {
-        if (amount > 0) {
-            require(amount <= _addrInfo[_msgSender()].withdrawable, "Exceeds withrawable");
-            uint256 time = block.timestamp;
-            require(time >= _addrInfo[_msgSender()].lastWithdrawTime + withdrawTimeGap, "Not within withdraw time gap");
-            emit Withdraw(_msgSender(), amount);
-            _addrInfo[_msgSender()].withdrawable -= amount;
-            _addrInfo[_msgSender()].lastWithdrawTime = time;
-            IERC20(asset).safeTransfer(_msgSender(), amount);
-        }
+        require(amount > 0, "No 0");
+        require(amount <= _addrInfo[_msgSender()].withdrawable, "Exceeds withrawable");
+        uint256 time = block.timestamp;
+        require(time >= _addrInfo[_msgSender()].lastWithdrawTime + withdrawTimeGap, "Not within withdraw time gap");
+        emit Withdraw(_msgSender(), amount);
+        _addrInfo[_msgSender()].withdrawable -= amount;
+        _addrInfo[_msgSender()].lastWithdrawTime = time;
+        IERC20(asset).safeTransfer(_msgSender(), amount);
     }
 
     function setWithdrawable(address to, uint256 amount) external nonReentrant whenNotPaused onlyOperator {
@@ -121,7 +119,7 @@ contract Vault is Ownable, ReentrancyGuard, Pausable {
      * @dev Transfer USDI
      */
     function transferAsset(address to, uint256 amount) external onlyAdmin {
-        require(amount <= IERC20(asset).balanceOf(address(this)), "No enough balance");
+        // require(amount <= IERC20(asset).balanceOf(address(this)), "No enough balance");
         emit TransferAsset(to, amount);
         IERC20(asset).safeTransfer(to, amount);
     }

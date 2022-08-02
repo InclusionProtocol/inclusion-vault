@@ -51,11 +51,10 @@ contract Exchange is Ownable, ReentrancyGuard, Pausable {
     }
 
     function withdraw(address to, address asset, uint256 amount) external onlyAdmin {
-        if (amount > 0) {
-            require(asset == usdt || asset == sdgi, "Wrong asset");
-            require(amount <= IERC20(asset).balanceOf(address(this)), "No enough balance");
-            IERC20(asset).safeTransfer(to, amount);
-        }
+        require(amount > 0, "No 0");
+        require(asset == usdt || asset == sdgi, "Wrong asset");
+        // require(amount <= IERC20(asset).balanceOf(address(this)), "No enough balance");
+        IERC20(asset).safeTransfer(to, amount);
     }
 
     function usdt2sdgi(uint256 amount) external nonReentrant whenNotPaused returns (uint256) {
@@ -63,8 +62,8 @@ contract Exchange is Ownable, ReentrancyGuard, Pausable {
             require(amount <= IERC20(usdt).balanceOf(_msgSender()), "No enough balance");
             (, int256 price, , ,) = priceFeed.latestRoundData();
             uint256 sdgiOut = amount * (10 ** uint256(priceFeed.decimals())) / uint256(price);
-            require(sdgiOut <= IERC20(sdgi).balanceOf(address(this)), "Exchange has no enough balance");
-            require(IERC20(usdt).approve(address(this), amount));
+            // require(sdgiOut <= IERC20(sdgi).balanceOf(address(this)), "Exchange has no enough balance");
+            // require(IERC20(usdt).approve(address(this), amount));
             emit ExchangeUSDT2SDGI(_msgSender(), amount, sdgiOut);
             IERC20(usdt).safeTransferFrom(_msgSender(), address(this), amount);
             IERC20(sdgi).safeTransfer(_msgSender(), sdgiOut);
@@ -80,8 +79,8 @@ contract Exchange is Ownable, ReentrancyGuard, Pausable {
             (, int256 price, , ,) = priceFeed.latestRoundData();
             uint256 usdtOut = amount * uint256(price) / (10 ** uint256(priceFeed.decimals()));
             uint256 fee = usdtOut * exchangeFee / 1e4;
-            require((usdtOut - fee) <= IERC20(usdt).balanceOf(address(this)), "Exchange has no enough balance");
-            require(IERC20(sdgi).approve(address(this), amount));
+            // require((usdtOut - fee) <= IERC20(usdt).balanceOf(address(this)), "Exchange has no enough balance");
+            // require(IERC20(sdgi).approve(address(this), amount));
             emit ExchangeSDGI2USDT(_msgSender(), amount, usdtOut - fee, fee);
             IERC20(sdgi).safeTransferFrom(_msgSender(), address(this), amount);
             IERC20(usdt).safeTransfer(_msgSender(), usdtOut - fee);

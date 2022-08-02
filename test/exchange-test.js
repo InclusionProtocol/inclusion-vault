@@ -36,7 +36,7 @@ describe("Exchange", function () {
     const { exchange, usdt, addr1 } = await loadFixture(deployFixture);
 
     await usdt.connect(addr1).approve(exchange.address, amount1);
-    await expect(exchange.connect(addr1).usdt2sdgi(amount1)).to.be.revertedWith("Exchange has no enough balance");
+    await expect(exchange.connect(addr1).usdt2sdgi(amount1)).to.be.reverted;
   });
 
   it("Can swap from USDT to SDGI", async function () {
@@ -52,7 +52,7 @@ describe("Exchange", function () {
     const { exchange, sdgi, usdt, addr1 } = await loadFixture(deployFixture);
 
     await sdgi.transfer(addr1.address, amount2);
-    await expect(exchange.connect(addr1).sdgi2usdt(amount2 * 2)).to.be.revertedWith("Exchange has no enough balance");
+    await expect(exchange.connect(addr1).sdgi2usdt(amount2 * 2)).to.be.reverted;
     await sdgi.connect(addr1).approve(exchange.address, amount2);
     await exchange.connect(addr1).sdgi2usdt(amount2);
     expect(await usdt.balanceOf(addr1.address)).to.equal(amount1 - amount1 / 100);
