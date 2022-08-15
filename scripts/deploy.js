@@ -39,6 +39,11 @@ async function main() {
   const vault = await Vault.deploy("SDGI", sdgi.address, admin);
   await vault.deployed();
   console.log("Vault deployed to:", vault.address);
+
+  const SwapAndDeposit = await ethers.getContractFactory("SwapAndDeposit");
+  const swapanddeposit = await SwapAndDeposit.deploy(usdt.address, sdgi.address, exchange.address, vault.address);
+  await swapanddeposit.deployed();
+  console.log("SwapAndDeposit deployed to:", swapanddeposit.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
