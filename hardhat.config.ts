@@ -4,8 +4,8 @@ import "@nomicfoundation/hardhat-toolbox";
 const dotenv = require("dotenv");
 dotenv.config();
 
-// const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-// const DEPLOY_PRIVATE_KEY = process.env.DEPLOY_PRIVATE_KEY;
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
+const DEPLOY_PRIVATE_KEY = process.env.DEPLOY_PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -22,11 +22,11 @@ const config: HardhatUserConfig = {
     target: "ethers-v5",
   },
   networks: {
-    // rinkeby: {
-    //   chainId: 4,
-    //   accounts: [`${DEPLOY_PRIVATE_KEY}`],
-    //   url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
-    // },
+    rinkeby: {
+      chainId: 4,
+      accounts: [`${DEPLOY_PRIVATE_KEY}`],
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+    },
   },
 };
 export default config;
