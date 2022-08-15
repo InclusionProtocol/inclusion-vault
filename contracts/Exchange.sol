@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./IExchange.sol";
 
-contract Exchange is Ownable, ReentrancyGuard, Pausable {
+contract Exchange is Ownable, ReentrancyGuard, Pausable, IExchange {
     using SafeERC20 for IERC20;
 
     address public usdt;

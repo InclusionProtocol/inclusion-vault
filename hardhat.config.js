@@ -10,6 +10,12 @@ const DEPLOY_PRIVATE_KEY = process.env.DEPLOY_PRIVATE_KEY;
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.9",
+  settings: {
+    optimizer: {
+      enabled: true,
+      runs: 200,
+    },
+  },
   networks: {
     rinkeby: {
       chainid: 4,

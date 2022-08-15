@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./IVault.sol";
 
-contract Vault is Ownable, ReentrancyGuard, Pausable {
+contract Vault is Ownable, ReentrancyGuard, Pausable, IVault {
     using SafeERC20 for IERC20;
 
     string public assetName;
@@ -87,15 +88,16 @@ contract Vault is Ownable, ReentrancyGuard, Pausable {
         }
     }
 
-    function deposit(uint256 amount) external nonReentrant whenNotPaused {
+    function deposit(uint256 amount, address onBehalfOf) external nonReentrant whenNotPaused {
         require(amount > 0, "No 0");
         require(amount <= depositLimit, "Exceeds deposit limit");
+        require(onBehalfOf != address(0), "Unvalid onBehalfOf");
         // require(IERC20(asset).balanceOf(_msgSender()) >= amount, "No enough token");
         // require(IERC20(asset).approve(address(this), amount));
-        emit Deposit(_msgSender(), amount);
+        emit Deposit(onBehalfOf, amount);
         IERC20(asset).safeTransferFrom(_msgSender(), address(this), amount);
-        _addrInfo[_msgSender()].recentDeposit = amount;
-        _addrInfo[_msgSender()].totalDeposit += amount;
+        _addrInfo[onBehalfOf].recentDeposit = amount;
+        _addrInfo[onBehalfOf].totalDeposit += amount;
     }
 
     function withdraw(uint256 amount) external nonReentrant whenNotPaused {
