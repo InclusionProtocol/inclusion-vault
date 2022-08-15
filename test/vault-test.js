@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { loadFixture } = require("ethereum-waffle");
+const { loadFixture } = require("@nomicfoundation/hardhat-chai-matchers");
 const { ethers } = require("hardhat");
 
 describe("Vault", function () {

@@ -1,12 +1,12 @@
 const { expect } = require("chai");
-const { loadFixture } = require("ethereum-waffle");
+const { loadFixture } = require("@nomicfoundation/hardhat-chai-matchers");
 const { ethers } = require("hardhat");
 
 describe("SwapAndDeposit", function () {
   const deci = 1_000_000;
   const amount1 = 72 * deci;
   const amount2 = 100 * deci;
-  
+
   async function deployFixture() {
     const [owner, admin, addr1, addr2] = await ethers.getSigners();
 
