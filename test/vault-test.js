@@ -29,11 +29,11 @@ describe("Vault", function () {
     const { vault, sdgi, addr1, addr2 } = await loadFixture(deployFixture);
 
     await sdgi.connect(addr1).approve(vault.address, amount1);
-    await vault.connect(addr1).deposit(amount1);
+    await vault.connect(addr1).deposit(amount1, addr1.address);
     expect(await sdgi.balanceOf(vault.address)).to.equal(amount1);
 
     await sdgi.connect(addr2).approve(vault.address, amount2);
-    await vault.connect(addr2).deposit(amount2);
+    await vault.connect(addr2).deposit(amount2, addr2.address);
     expect(await sdgi.balanceOf(vault.address)).to.equal(amount1 + amount2);
   });
 
@@ -41,45 +41,53 @@ describe("Vault", function () {
     const { vault, sdgi, addr1, depositLimit } = await loadFixture(deployFixture);
 
     await sdgi.connect(addr1).approve(vault.address, 2 * depositLimit);
-    await expect(vault.connect(addr1).deposit(2 * depositLimit)).to.be.revertedWith("Exceeds deposit limit");
+    await expect(vault.connect(addr1).deposit(2 * depositLimit, addr1.address)).to.be.revertedWith("Exceeds deposit limit");
   });
 
   it("Can set operator and it works", async function () {
-    const { vault, admin, operator, addr1 } = await loadFixture(deployFixture);
+    const { vault, sdgi, admin, operator, addr1 } = await loadFixture(deployFixture);
 
     await expect(vault.connect(operator).setWithdrawable(addr1.address, amount2)).to.be.revertedWith("Operator only");
     await expect(vault.setOperator(operator.address)).to.be.revertedWith("Admin only");
     await vault.connect(admin).setOperator(operator.address);
-    await vault.connect(operator).setWithdrawable(addr1.address, amount2);
-    await vault.connect(operator).setWithdrawable(addr1.address, amount2);
+
+    await sdgi.connect(addr1).approve(vault.address, amount1);
+    await vault.connect(addr1).deposit(amount1, addr1.address);
+    await vault.connect(operator).setWithdrawable(addr1.address, amount1);
   });
 
   it("Can transfer asset", async function () {
     const { vault, sdgi, admin, addr1 } = await loadFixture(deployFixture);
 
-    expect(await sdgi.balanceOf(vault.address)).to.equal(amount1 + amount2);
+    await sdgi.connect(addr1).approve(vault.address, amount1);
+    await vault.connect(addr1).deposit(amount1, addr1.address);
     await expect(vault.transferAsset(addr1.address, amount1)).to.be.revertedWith("Admin only");
-    await vault.connect(admin).transferAsset(addr1.address, amount2 / 2);
+    await vault.connect(admin).transferAsset(addr1.address, amount1);
   });
 
   it("Cant set withdrawable exceeding total deposit", async function () {
-    const { vault, operator, addr1 } = await loadFixture(deployFixture);
+    const { vault, admin, operator, addr1 } = await loadFixture(deployFixture);
 
+    await vault.connect(admin).setOperator(operator.address);
     await expect(vault.connect(operator).setWithdrawable(addr1.address, amount1 + amount2)).to.be.revertedWith("Exceeds total deposit");
   });
 
   it("Cant set withdrawable exceeding withdraw limit", async function () {
-    const { vault, sdgi, operator, addr1, depositLimit } = await loadFixture(deployFixture);
+    const { vault, sdgi, admin, operator, addr1, depositLimit } = await loadFixture(deployFixture);
 
     await sdgi.connect(addr1).approve(vault.address, 2 * depositLimit);
-    await vault.connect(addr1).deposit(depositLimit);
-    await vault.connect(addr1).deposit(depositLimit);
+    await vault.connect(addr1).deposit(depositLimit, addr1.address);
+    await vault.connect(addr1).deposit(depositLimit, addr1.address);
+    await vault.connect(admin).setOperator(operator.address);
     await expect(vault.connect(operator).setWithdrawable(addr1.address, 2 * depositLimit)).to.be.revertedWith("Exceeds withdraw limit");
   });
 
   it("Can withdraw", async function () {
-    const { vault, operator, addr1 } = await loadFixture(deployFixture);
+    const { vault, sdgi, admin, operator, addr1 } = await loadFixture(deployFixture);
 
+    await sdgi.connect(addr1).approve(vault.address, amount2);
+    await vault.connect(addr1).deposit(amount2, addr1.address);
+    await vault.connect(admin).setOperator(operator.address);
     await vault.connect(operator).setWithdrawable(addr1.address, amount2);
     await expect(vault.connect(addr1).withdraw(amount1)).to.be.revertedWith("Exceeds withrawable");
     await vault.connect(addr1).withdraw(amount2);
@@ -87,10 +95,14 @@ describe("Vault", function () {
   });
 
   it("Cant withdraw within time gap", async function () {
-    const { vault, operator, addr1 } = await loadFixture(deployFixture);
+    const { vault, sdgi, admin, operator, addr1 } = await loadFixture(deployFixture);
 
+    await sdgi.connect(addr1).approve(vault.address, amount2);
+    await vault.connect(addr1).deposit(amount2, addr1.address);
+    await vault.connect(admin).setOperator(operator.address);
     await vault.connect(operator).setWithdrawable(addr1.address, amount2);
-    await expect(vault.connect(addr1).withdraw(amount2)).to.be.revertedWith("Not within withdraw time gap");
+    await vault.connect(addr1).withdraw(amount2 / 2);
+    await expect(vault.connect(addr1).withdraw(amount2 / 2)).to.be.revertedWith("Not within withdraw time gap");
   });
 
   it("Can be paused", async function () {

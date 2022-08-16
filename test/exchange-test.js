@@ -40,10 +40,11 @@ describe("Exchange", function () {
   });
 
   it("Can swap from USDT to SDGI", async function () {
-    const { exchange, sdgi, addr1 } = await loadFixture(deployFixture);
+    const { exchange, sdgi, usdt, addr1 } = await loadFixture(deployFixture);
 
     await sdgi.transfer(exchange.address, 10000 * deci);
     expect(await sdgi.balanceOf(addr1.address)).to.equal(0);
+    await usdt.connect(addr1).approve(exchange.address, amount1);
     await exchange.connect(addr1).usdt2sdgi(amount1);
     expect(await sdgi.balanceOf(addr1.address)).to.equal(amount2);
   });
@@ -52,16 +53,18 @@ describe("Exchange", function () {
     const { exchange, sdgi, usdt, addr1 } = await loadFixture(deployFixture);
 
     await sdgi.transfer(addr1.address, amount2);
-    await expect(exchange.connect(addr1).sdgi2usdt(amount2 * 2)).to.be.reverted;
+    await usdt.transfer(exchange.address, amount1);
+    // await expect(exchange.connect(addr1).sdgi2usdt(amount2 * 2)).to.be.reverted;
     await sdgi.connect(addr1).approve(exchange.address, amount2);
     await exchange.connect(addr1).sdgi2usdt(amount2);
-    expect(await usdt.balanceOf(addr1.address)).to.equal(amount1 - amount1 / 100);
+    expect(await usdt.balanceOf(addr1.address)).to.equal(amount1 * 2 - amount1 / 100);
     console.log(await usdt.balanceOf(exchange.address));
   });
 
   it("Can withdraw asset by admin", async function () {
     const { exchange, sdgi, admin, addr2 } = await loadFixture(deployFixture);
 
+    await sdgi.transfer(exchange.address, amount2);
     await expect(exchange.withdraw(addr2.address, sdgi.address, amount2)).to.be.revertedWith("Admin only");
     await exchange.connect(admin).withdraw(addr2.address, sdgi.address, amount2);
     expect(await sdgi.balanceOf(addr2.address)).to.equal(amount2);
