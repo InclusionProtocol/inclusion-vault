@@ -28,5 +28,8 @@ const config: HardhatUserConfig = {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
     },
   },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY,
+  },
 };
 export default config;
